@@ -27,6 +27,7 @@ const articleSchema = {
 
 const Article = mongoose.model('Article', articleSchema);
 
+//////////////////////// Requests targeting ALL articles /////////////////////////////
 app.route('/articles')
 
   .get(function(req, res) {
@@ -52,7 +53,7 @@ app.route('/articles')
       }
     });
   })
-  
+
   .delete(function(req, res) {
     Article.deleteMany(function(err) {
       if (!err) {
@@ -61,6 +62,70 @@ app.route('/articles')
         res.send(err);
       }
     });
+  });
+
+//////////////////////// Requests targeting SPECIFIC article /////////////////////////////
+app.route("/articles/:articleTitle")
+
+  .get(function(req, res) {
+    Article.findOne({
+      title: req.params.articleTitle
+    }, function(err, foundArticle) {
+      if (foundArticle) {
+        res.send(foundArticle);
+      } else {
+        res.send("No article matching that title was found");
+      }
+      if (err) {
+        res.send(err);
+      }
+    });
+  })
+
+  .put(function(req, res) {
+    Article.update({
+        title: req.params.articleTitle
+      }, {
+        title: req.body.title,
+        content: req.body.content
+      }, {
+        overwrite: true
+      },
+      function(err) {
+        if (!err) {
+          res.send("Successsfully updated article");
+        }
+      }
+    );
+  })
+
+  .patch(function(req, res) {
+    Article.update({
+        title: req.params.articleTitle
+      }, {
+        $set: req.body
+      },
+      function(err) {
+        if (!err) {
+          res.send("successfully updated article");
+        } else {
+          res.send(err);
+        }
+      }
+    );
+  })
+
+  .delete(function(req, res) {
+    Article.deleteOne({
+        title: req.params.articleTitle
+      },
+      function(err) {
+        if (!err) {
+          res.send("Successfully deleted the corresponding article");
+        } else {
+          res.send(err);
+        }
+      });
   });
 
 app.listen(3000, function() {
